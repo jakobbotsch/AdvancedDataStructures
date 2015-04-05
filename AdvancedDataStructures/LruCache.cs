@@ -11,7 +11,7 @@ namespace AdvancedDataStructures
 	/// <typeparam name="TKey">The key type.</typeparam>
 	/// <typeparam name="TValue">The value type.</typeparam>
 	// Todo: Unit tests
-	public class LruCache<TKey, TValue>
+	public sealed class LruCache<TKey, TValue>
 	{
 		private readonly IEqualityComparer<TKey> _comparer;
 		private int[] _buckets;
@@ -19,12 +19,7 @@ namespace AdvancedDataStructures
 		private int _headUsed; // The most recently used entry
 		private int _tailUsed; // The least recently used entry
 
-		public LruCache(int capacity)
-			: this(capacity, null)
-		{
-		}
-
-		public LruCache(int capacity, IEqualityComparer<TKey> comparer)
+		public LruCache(int capacity, IEqualityComparer<TKey> comparer = null)
 		{
 			if (capacity <= 0)
 				throw new ArgumentOutOfRangeException("capacity");
