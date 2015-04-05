@@ -61,7 +61,7 @@ namespace AdvancedDataStructures
 			Count++;
 		}
 
-		public T ExtractMin()
+		public T ExtractMax()
 		{
 			if (Count <= 0)
 				throw new InvalidOperationException("The priority queue is empty");
@@ -148,7 +148,7 @@ namespace AdvancedDataStructures
 				if (right < Count && _comparer.Compare(_items[right], _items[left]) > 0)
 					largestChild = right;
 
-				if (_comparer.Compare(_items[index], _items[largestChild]) > 0)
+				if (_comparer.Compare(_items[index], _items[largestChild]) >= 0)
 					break; // Item is larger than both children
 
 				// Child is larger than item
