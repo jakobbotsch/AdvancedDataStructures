@@ -160,35 +160,7 @@ namespace AdvancedDataStructures
 			if (Count == Capacity)
 			{
 				// LRU cache is full. Remove the tail.
-				Debug.Assert(_tailUsed != -1);
-				entryIndex = _tailUsed;
-
-				if (Count != 1)
-				{
-					Debug.Assert(_headUsed != -1 && _tailUsed != -1 && _tailUsed != _headUsed,
-						"When the list has more than 1 element, tail and head should not be equal to each other or -1.");
-
-					// There are more elements than 1, and we have filled the cache.
-					// Remove the tail, and reuse its entry. Since we are removing the tail,
-					// we only need to worry about the previous one (next should be -1).
-					Debug.Assert(_entries[_tailUsed].NextUsed == -1, "Tail->Next should be -1");
-					int previous = _entries[_tailUsed].PreviousUsed;
-
-					// Previous is the tail now.
-					_entries[previous].NextUsed = -1;
-					_tailUsed = previous;
-					// The entry will be updated later, when it's moved to be the head.
-				}
-				else
-				{
-					Debug.Assert(_headUsed != -1 && _headUsed == _tailUsed);
-
-					_headUsed = -1;
-					_tailUsed = -1;
-				}
-
-				// We "removed" one.
-				Count--;
+				entryIndex = FreeTail();
 			}
 			else
 			{
@@ -204,6 +176,64 @@ namespace AdvancedDataStructures
 
 			UpdateEntryForInsert(entryIndex, ref _entries[entryIndex], bucket, hashCode, key, value);
 			Count++;
+		}
+
+		private int FreeTail()
+		{
+			Debug.Assert(_tailUsed != -1);
+
+			int freed = _tailUsed;
+
+			if (Count != 1)
+			{
+				Debug.Assert(_headUsed != -1 && _tailUsed != -1 && _tailUsed != _headUsed,
+					"When the list has more than 1 element, tail and head should not be equal to each other or -1.");
+
+				// There are more elements than 1, and we have filled the cache.
+				// Remove the tail, and reuse its entry. Since we are removing the tail,
+				// we only need to worry about the previous one (next should be -1).
+				Debug.Assert(_entries[_tailUsed].NextUsed == -1, "Tail->Next should be -1");
+				int previous = _entries[_tailUsed].PreviousUsed;
+
+				// Previous is the tail now.
+				_entries[previous].NextUsed = -1;
+				_tailUsed = previous;
+				// The entry will be updated later, when it's moved to be the head.
+			}
+			else
+			{
+				Debug.Assert(_headUsed != -1 && _headUsed == _tailUsed);
+
+				_headUsed = -1;
+				_tailUsed = -1;
+			}
+
+			// Remove from bucket
+			uint bucket = _entries[freed].HashCode % unchecked((uint)_buckets.Length);
+
+			int last = -1;
+			for (int i = _buckets[bucket]; i != -1; last = i, i = _entries[i].Next)
+			{
+				if (i != freed)
+					continue;
+
+				if (last == -1)
+				{
+					// Was in _buckets[bucket]
+					_buckets[bucket] = _entries[i].Next;
+				}
+				else
+				{
+					_entries[last].Next = _entries[i].Next;
+				}
+
+				break;
+			}
+
+			// We "removed" one.
+			Count--;
+
+			return freed;
 		}
 
 		private void UpdateEntryForInsert(int index, ref Entry entry, uint bucket, uint hashCode, TKey key, TValue value)

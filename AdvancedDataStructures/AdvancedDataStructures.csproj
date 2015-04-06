@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="LruCache.cs" />
     <Compile Include="LruCacheHelpers.cs" />
+    <Compile Include="PriorityQueue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
