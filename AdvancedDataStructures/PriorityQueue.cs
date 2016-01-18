@@ -20,7 +20,7 @@ namespace AdvancedDataStructures
 		public PriorityQueue(int capacity = 0, IComparer<T> comparer = null)
 		{
 			if (capacity < 0)
-				throw new ArgumentOutOfRangeException("capacity");
+				throw new ArgumentOutOfRangeException(nameof(capacity));
 
 			_items = capacity == 0 ? EmptyArray : new T[capacity];
 			_comparer = comparer ?? Comparer<T>.Default;
@@ -43,7 +43,7 @@ namespace AdvancedDataStructures
 			set
 			{
 				if (value < Count)
-					throw new ArgumentOutOfRangeException("value");
+					throw new ArgumentOutOfRangeException(nameof(value));
 
 				Resize(value);
 			}
@@ -56,8 +56,7 @@ namespace AdvancedDataStructures
 			if (Count == Capacity)
 				Expand();
 
-			_items[Count] = item;
-			BubbleUp(Count);
+			BubbleUp(Count, item);
 			Count++;
 		}
 
@@ -71,8 +70,7 @@ namespace AdvancedDataStructures
 			if (Count > 0)
 			{
 				// Move last one to root
-				_items[0] = _items[Count];
-				BubbleDown(0);
+				BubbleDown(0, _items[Count]);
 			}
 
 			_items[Count] = default(T);
@@ -86,14 +84,13 @@ namespace AdvancedDataStructures
 
 			int comparison = _comparer.Compare(newValue, _items[index]);
 
-			_items[index] = newValue;
 			// If the element we are replacing with is larger than what was there,
 			// it might also be larger than the parent. In that case we should bubble up.
 			// Otherwise it might be smaller than children; bubble down in that case.
 			if (comparison > 0)
-				BubbleUp(index);
+				BubbleUp(index, newValue);
 			else if (comparison < 0)
-				BubbleDown(index);
+				BubbleDown(index, newValue);
 		}
 
 		private void Expand()
@@ -118,27 +115,29 @@ namespace AdvancedDataStructures
 			Array.Resize(ref _items, newCapacity);
 		}
 
-		private void BubbleUp(int index)
+		private void BubbleUp(int index, T value)
 		{
 			// Parent is always at floor((index - 1) / 2)
 			while (index != 0)
 			{
 				int parent = (index - 1) / 2;
 
-				if (_comparer.Compare(_items[index], _items[parent]) <= 0)
+				if (_comparer.Compare(value, _items[parent]) <= 0)
 					break; // Item is smaller than parent
 
-				Swap(ref _items[index], ref _items[parent]);
+				_items[index] = _items[parent];
 				index = parent;
 			}
+
+			_items[index] = value;
 		}
 
-		private void BubbleDown(int index)
+		private void BubbleDown(int index, T value)
 		{
 			// Children are at index * 2 + 1 and index * 2 + 2
 			while (true)
 			{
-				int left = index * 2 + 1;
+				int left = index*2 + 1;
 				if (left >= Count)
 					break;
 
@@ -148,20 +147,15 @@ namespace AdvancedDataStructures
 				if (right < Count && _comparer.Compare(_items[right], _items[left]) > 0)
 					largestChild = right;
 
-				if (_comparer.Compare(_items[index], _items[largestChild]) >= 0)
+				if (_comparer.Compare(value, _items[largestChild]) >= 0)
 					break; // Item is larger than both children
 
 				// Child is larger than item
-				Swap(ref _items[index], ref _items[largestChild]);
+				_items[index] = _items[largestChild];
 				index = largestChild;
 			}
-		}
 
-		private static void Swap<TVal>(ref TVal left, ref TVal right)
-		{
-			TVal temp = left;
-			left = right;
-			right = temp;
+			_items[index] = value;
 		}
 	}
 }
