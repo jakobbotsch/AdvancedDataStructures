@@ -4,158 +4,158 @@ using System.Diagnostics;
 
 namespace AdvancedDataStructures
 {
-	public class PriorityQueue<T>
-	{
-		// This value is ripped from .NET reference source. I assume they determined it empirically.
-		private const int DefaultCapacity = 4;
+    public class PriorityQueue<T>
+    {
+        // This value is ripped from .NET reference source. I assume they determined it empirically.
+        private const int DefaultCapacity = 4;
 
-		private static readonly T[] EmptyArray = new T[0];
+        private static readonly T[] s_emptyArray = new T[0];
 
-		private readonly IComparer<T> _comparer;
-		// The priority queue is implemented as a standard binary max-heap.
-		// The root is at index 0, its children at 1 and 2; in general, the children are at
-		// i*2+1 and i*2+2, and the parent is at floor((i - 1) / 2)
-		private T[] _items;
+        private readonly IComparer<T> _comparer;
+        // The priority queue is implemented as a standard binary max-heap.
+        // The root is at index 0, its children at 1 and 2; in general, the children are at
+        // i*2+1 and i*2+2, and the parent is at floor((i - 1) / 2)
+        private T[] _items;
 
-		public PriorityQueue(int capacity = 0, IComparer<T> comparer = null)
-		{
-			if (capacity < 0)
-				throw new ArgumentOutOfRangeException(nameof(capacity));
+        public PriorityQueue(int capacity = 0, IComparer<T> comparer = null)
+        {
+            if (capacity < 0)
+                throw new ArgumentOutOfRangeException(nameof(capacity));
 
-			_items = capacity == 0 ? EmptyArray : new T[capacity];
-			_comparer = comparer ?? Comparer<T>.Default;
-		}
+            _items = capacity == 0 ? s_emptyArray : new T[capacity];
+            _comparer = comparer ?? Comparer<T>.Default;
+        }
 
-		public T this[int index]
-		{
-			get
-			{
-				if (index < Count)
-					return _items[index];
+        public T this[int index]
+        {
+            get
+            {
+                if (index < Count)
+                    return _items[index];
 
-				throw new IndexOutOfRangeException();
-			}
-		}
+                throw new IndexOutOfRangeException();
+            }
+        }
 
-		public int Capacity
-		{
-			get { return _items.Length; }
-			set
-			{
-				if (value < Count)
-					throw new ArgumentOutOfRangeException(nameof(value));
+        public int Capacity
+        {
+            get { return _items.Length; }
+            set
+            {
+                if (value < Count)
+                    throw new ArgumentOutOfRangeException(nameof(value));
 
-				Resize(value);
-			}
-		}
+                Resize(value);
+            }
+        }
 
-		public int Count { get; private set; }
+        public int Count { get; private set; }
 
-		public void Add(T item)
-		{
-			if (Count == Capacity)
-				Expand();
+        public void Add(T item)
+        {
+            if (Count == Capacity)
+                Expand();
 
-			BubbleUp(Count, item);
-			Count++;
-		}
+            BubbleUp(Count, item);
+            Count++;
+        }
 
-		public T ExtractMax()
-		{
-			if (Count <= 0)
-				throw new InvalidOperationException("The priority queue is empty");
+        public T ExtractMax()
+        {
+            if (Count <= 0)
+                throw new InvalidOperationException("The priority queue is empty");
 
-			T min = _items[0];
-			Count--;
-			if (Count > 0)
-			{
-				// Move last one to root
-				BubbleDown(0, _items[Count]);
-			}
+            T min = _items[0];
+            Count--;
+            if (Count > 0)
+            {
+                // Move last one to root
+                BubbleDown(0, _items[Count]);
+            }
 
-			_items[Count] = default(T);
-			return min;
-		}
+            _items[Count] = default(T);
+            return min;
+        }
 
-		public void Replace(int index, T newValue)
-		{
-			if (index < 0 || index >= Count)
-				throw new IndexOutOfRangeException();
+        public void Replace(int index, T newValue)
+        {
+            if (index < 0 || index >= Count)
+                throw new IndexOutOfRangeException();
 
-			int comparison = _comparer.Compare(newValue, _items[index]);
+            int comparison = _comparer.Compare(newValue, _items[index]);
 
-			// If the element we are replacing with is larger than what was there,
-			// it might also be larger than the parent. In that case we should bubble up.
-			// Otherwise it might be smaller than children; bubble down in that case.
-			if (comparison > 0)
-				BubbleUp(index, newValue);
-			else if (comparison < 0)
-				BubbleDown(index, newValue);
-		}
+            // If the element we are replacing with is larger than what was there,
+            // it might also be larger than the parent. In that case we should bubble up.
+            // Otherwise it might be smaller than children; bubble down in that case.
+            if (comparison > 0)
+                BubbleUp(index, newValue);
+            else if (comparison < 0)
+                BubbleDown(index, newValue);
+        }
 
-		private void Expand()
-		{
-			int newCapacity = Math.Max(Count * 2, DefaultCapacity);
-			Resize(newCapacity);
-		}
+        private void Expand()
+        {
+            int newCapacity = Math.Max(Count * 2, DefaultCapacity);
+            Resize(newCapacity);
+        }
 
-		private void Resize(int newCapacity)
-		{
-			if (newCapacity == _items.Length)
-				return;
+        private void Resize(int newCapacity)
+        {
+            if (newCapacity == _items.Length)
+                return;
 
-			Debug.Assert(newCapacity > _items.Length);
+            Debug.Assert(newCapacity > _items.Length);
 
-			if (newCapacity == 0)
-			{
-				_items = EmptyArray;
-				return;
-			}
+            if (newCapacity == 0)
+            {
+                _items = s_emptyArray;
+                return;
+            }
 
-			Array.Resize(ref _items, newCapacity);
-		}
+            Array.Resize(ref _items, newCapacity);
+        }
 
-		private void BubbleUp(int index, T value)
-		{
-			// Parent is always at floor((index - 1) / 2)
-			while (index != 0)
-			{
-				int parent = (index - 1) / 2;
+        private void BubbleUp(int index, T value)
+        {
+            // Parent is always at floor((index - 1) / 2)
+            while (index != 0)
+            {
+                int parent = (index - 1) / 2;
 
-				if (_comparer.Compare(value, _items[parent]) <= 0)
-					break; // Item is smaller than parent
+                if (_comparer.Compare(value, _items[parent]) <= 0)
+                    break; // Item is smaller than parent
 
-				_items[index] = _items[parent];
-				index = parent;
-			}
+                _items[index] = _items[parent];
+                index = parent;
+            }
 
-			_items[index] = value;
-		}
+            _items[index] = value;
+        }
 
-		private void BubbleDown(int index, T value)
-		{
-			// Children are at index * 2 + 1 and index * 2 + 2
-			while (true)
-			{
-				int left = index*2 + 1;
-				if (left >= Count)
-					break;
+        private void BubbleDown(int index, T value)
+        {
+            // Children are at index * 2 + 1 and index * 2 + 2
+            while (true)
+            {
+                int left = index * 2 + 1;
+                if (left >= Count)
+                    break;
 
-				int right = left + 1;
-				int largestChild = left;
+                int right = left + 1;
+                int largestChild = left;
 
-				if (right < Count && _comparer.Compare(_items[right], _items[left]) > 0)
-					largestChild = right;
+                if (right < Count && _comparer.Compare(_items[right], _items[left]) > 0)
+                    largestChild = right;
 
-				if (_comparer.Compare(value, _items[largestChild]) >= 0)
-					break; // Item is larger than both children
+                if (_comparer.Compare(value, _items[largestChild]) >= 0)
+                    break; // Item is larger than both children
 
-				// Child is larger than item
-				_items[index] = _items[largestChild];
-				index = largestChild;
-			}
+                // Child is larger than item
+                _items[index] = _items[largestChild];
+                index = largestChild;
+            }
 
-			_items[index] = value;
-		}
-	}
+            _items[index] = value;
+        }
+    }
 }
